@@ -1,0 +1,139 @@
+rankall<-function(outcome,num)
+{
+  carestate<-data.frame()
+  carestatecausaorder<-data.frame()
+
+  chivato<-0
+  numstates<-0
+  
+  ##Read the data frame with the columns class character
+  care<-read.csv("rprog-data-ProgAssignment3-data/outcome-of-care-measures.csv",colClasses = "character",na.strings = "Not Available")
+  
+  
+  ## Create a list where put the three possibles var outcome
+  outcomelist<-c("heart attack","heart failure","pneumonia")
+  
+ 
+  
+  ##Compare vae outcome with list outcomelist. If not search inside list, stop function and return mis
+  if(!outcome %in% outcomelist)
+  {
+    stop("invalid outcome")
+    chivato<-1
+  }
+  
+  ## Create a list where put the column 7 ( State) from dataframe for can check input var state
+  statelist<-care[,7,drop=TRUE]
+  fstate<-factor(statelist)
+  state<-levels(fstate)
+  numstates<-length(state)
+  
+  ##Create data.frame for store the finals result
+  hospitalsresult<-data.frame(hospital=1:numstates,state=1:numstates)
+  
+  for(a in 1:numstates)
+  {
+    carestate<-data.frame()
+    carestatecausaorder<-data.frame()
+    
+    ## Create dataframe where var state from factor state[x] is equal field State
+    carestate<-subset(care,subset=State==state[a])
+    if(outcome=="heart attack")
+    {
+      ## Delete all NA ( in this case Not Available) from column Hospital.30.Day.Death..Mortality..Attack
+      ## I do this, because the case "worst" or last for this colunm, NA is not contabilite
+      carestate<-carestate[!(is.na(carestate$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack)),]
+      
+      ## How the columns dataframe is character, for that order correct colunm 11,put function as.numeric
+      ## else the ordering is not correct, for exemple 10.0 put as lower that 8.1
+      carestate[,11]<-as.numeric(carestate[,11])
+      
+      ## ordering dataframe ascendent for column 11 and 2
+      carestatecausaorder<-carestate[order(carestate[,11],carestate[,2]), ]
+      numfilas<-nrow(carestatecausaorder)
+      
+      if(num<=numfilas)
+      {
+        hospranking<-carestatecausaorder[num,2]
+      }
+      else if(num=="best")
+      {
+        hospranking<-carestatecausaorder[1,2]
+      }
+      else if(num=="worst")
+      {
+        hospranking<-carestatecausaorder[numfilas,2]
+      }
+      else
+      {
+        
+        hospranking<-NA
+      }
+    }  
+    
+    if(outcome=="heart failure")
+    {
+      ## Delete all NA ( in this case Not Available) from column Hospital.30.Day.Death..Mortality..Failure
+      ## I do this, because the case "worst" or last for this colunm, NA is not contabilite
+      carestate<-carestate[!(is.na(carestate$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure)),]
+      
+      carestate[,17]<-as.numeric(carestate[,17])
+      carestatecausaorder<-carestate[order(carestate[,17],carestate[,2]), ]
+      
+      numfilas<-nrow(carestatecausaorder)
+      
+      if(num<=numfilas)
+      {
+        hospranking<-carestatecausaorder[num,2]
+      }
+      else if(num=="best")
+      {
+        hospranking<-carestatecausaorder[1,2]
+      }
+      else if(num=="worst")
+      {
+        hospranking<-carestatecausaorder[numfilas,2]
+      }
+      else
+      {
+        
+        hospranking<-NA
+      }
+      
+    }
+    
+    if(outcome=="pneumonia")
+    {
+      
+      ## Delete all NA ( in this case Not Available) from column Hospital.30.Day.Death..Mortality..Pneom
+      ## I do this, because the case "worst" or last for this colunm, NA is not contabilite 
+      carestate<-carestate[!(is.na(carestate$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia)),]
+      carestate[,23]<-as.numeric(carestate[,23])
+      carestatecausaorder<-carestate[order(carestate[,23],carestate[,2]), ]
+      numfilas<-nrow(carestatecausaorder)
+      if(num<=numfilas)
+      {
+        hospranking<-carestatecausaorder[num,2]
+      }
+      
+      else if(num=="best")
+      {
+        hospranking<-carestatecausaorder[1,2]
+      }
+      else if(num=="worst")
+      {
+        hospranking<-carestatecausaorder[numfilas,2]
+      }
+      else
+      {
+        hospranking<-NA
+      }
+    }
+  
+    ## Store the result in the new data frame
+    hospitalsresult[a,1]<-hospranking
+    hospitalsresult[a,2]<-state[a]
+  }
+  hospitalsresult
+  
+}
